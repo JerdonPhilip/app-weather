@@ -33,4 +33,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build
           enable_jekyll: false
-          repository_name: JerdonPhilip/app-weather
+          external_repository: JerdonPhilip/app-weather
