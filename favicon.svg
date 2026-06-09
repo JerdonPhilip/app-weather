@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Sun -->
+  <circle cx="50" cy="45" r="18" fill="#FFD93D"/>
+  <!-- Sun rays -->
+  <path d="M50 25 L52 35 L48 35 Z" fill="#FFD93D"/>
+  <path d="M50 27 L52 37 L48 37 Z" fill="#FFD93D"/>
+  <path d="M25 55 L35 53 L35 57 Z" fill="#FFD93D"/>
+  <path d="M27 55 L37 53 L37 57 Z" fill="#FFD93D"/>
+  <path d="M75 55 L85 53 L85 57 Z" fill="#FFD93D"/>
+  <path d="M73 55 L83 53 L83 57 Z" fill="#FFD93D"/>
+  <path d="M30 30 L40 28 L40 32 Z" fill="#FFD93D"/>
+  <path d="M32 30 L42 28 L42 32 Z" fill="#FFD93D"/>
+  <path d="M70 30 L80 28 L80 32 Z" fill="#FFD93D"/>
+  <path d="M68 30 L78 28 L78 32 Z" fill="#FFD93D"/>
+  <!-- Cloud -->
+  <ellipse cx="65" cy="58" rx="22" ry="10" fill="#E0E0E0"/>
+  <ellipse cx="50" cy="62" rx="20" ry="8" fill="#FFFFFF"/>
+  <!-- Cloud dots -->
+  <circle cx="60" cy="60" r="3" fill="#D3D3D3"/>
+  <circle cx="50" cy="62" r="3" fill="#D3D3D3"/>
+  <circle cx="70" cy="58" r="3" fill="#D3D3D3"/>
+</svg>
