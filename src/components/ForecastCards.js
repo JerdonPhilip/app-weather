@@ -60,7 +60,7 @@ const ForecastCards = ({ forecast }) => {
                   {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
                   {i === 0 && <span className="text-mist font-normal"> · today</span>}
                 </p>
-                <p className="readout text-[11px] text-mist">
+                <p className="readout text-xs text-mist">
                   {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </p>
               </div>
@@ -76,7 +76,7 @@ const ForecastCards = ({ forecast }) => {
                     aria-label={`Between ${day.minTemp} and ${day.maxTemp} degrees`}
                   />
                 </div>
-                <p className="readout text-[11px] text-mist mt-1.5 flex items-center gap-3">
+                <p className="readout text-xs text-mist mt-1.5 flex items-center gap-3">
                   <span className="inline-flex items-center gap-1">
                     <DropletIcon className="w-3 h-3" /> {day.precip} mm
                   </span>
@@ -92,7 +92,7 @@ const ForecastCards = ({ forecast }) => {
               </p>
 
               {i === bestIndex && (
-                <span className="absolute -top-2.5 right-3 inline-flex items-center gap-1 rounded-full bg-status-good/90 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-ink font-bold">
+                <span className="absolute -top-2.5 right-3 inline-flex items-center gap-1 rounded-full bg-status-good/90 px-2 py-0.5 text-[11px] font-mono uppercase tracking-wider text-ink font-bold">
                   <HangerIcon className="w-3 h-3" /> Best dry day
                 </span>
               )}

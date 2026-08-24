@@ -63,7 +63,7 @@ const LaundryAdvisory = ({ today }) => {
       </ul>
 
       {today.humidityAvg != null && (
-        <p className="readout text-[11px] text-mist/80 mt-3 flex items-center gap-1.5">
+        <p className="readout text-xs text-mist/80 mt-3 flex items-center gap-1.5">
           <DropletIcon className="w-3 h-3" /> Avg humidity next 12h: {Math.round(today.humidityAvg)}%
         </p>
       )}

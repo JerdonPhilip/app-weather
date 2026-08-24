@@ -66,7 +66,7 @@ const AirQualityCard = ({ airQuality }) => {
           ['PM10', pm10 != null ? `${pm10} µg/m³` : '--'],
         ].map(([k, v]) => (
           <div key={k} className="rounded-xl bg-white/[0.05] border border-white/[0.06] px-3 py-2">
-            <dt className="eyebrow !text-[10px] !tracking-[0.16em]">{k}</dt>
+            <dt className="eyebrow !text-[11px] !tracking-[0.14em]">{k}</dt>
             <dd className="readout text-sm font-semibold mt-0.5">{v}</dd>
           </div>
         ))}

@@ -114,14 +114,14 @@ const WindUVSummary = ({ current, daily }) => {
       className="glass-panel p-5 sm:p-6 grid grid-cols-2 gap-4 items-center"
     >
       <div className="flex flex-col items-center text-white/80">
-        <h2 className="eyebrow self-start mb-2 flex items-center gap-2 text-white/60">
+        <h2 className="eyebrow self-start mb-2 flex items-center gap-2">
           <WindIcon className="w-4 h-4 text-horizon" /> Wind
         </h2>
         <CompassDial degrees={current.winddirection} />
         <p className="readout mt-2 text-lg font-bold text-white">
           {Math.round(current.windspeed)} <span className="text-xs font-normal text-mist">km/h</span>
         </p>
-        <p className="readout text-[11px] text-mist">from the {compassPoint(current.winddirection) || '--'}</p>
+        <p className="readout text-xs text-mist">from the {compassPoint(current.winddirection) || '--'}</p>
       </div>
 
       <div className="flex flex-col items-center text-white/80 border-l border-white/10 pl-4">
@@ -129,7 +129,7 @@ const WindUVSummary = ({ current, daily }) => {
           <SunIcon className="w-4 h-4 text-horizon" /> UV index
         </h2>
         <UvArc value={uvIndex} />
-        <p className="readout text-[11px] text-mist mt-1">daily maximum</p>
+        <p className="readout text-xs text-mist mt-1">daily maximum</p>
       </div>
     </motion.section>
   );

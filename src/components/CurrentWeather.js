@@ -94,7 +94,7 @@ const CurrentWeather = ({ forecast, locationName, nowIndex }) => {
           >
             <span className="text-horizon shrink-0">{chip.icon}</span>
             <span className="min-w-0">
-              <span className="block eyebrow !tracking-[0.16em] !text-[10px]">{chip.label}</span>
+              <span className="block eyebrow !tracking-[0.14em] !text-[11px]">{chip.label}</span>
               <span
                 className="readout block text-sm font-semibold truncate"
                 style={{ color: chip.accent || '#F2F7FD' }}

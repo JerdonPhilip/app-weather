@@ -43,11 +43,11 @@ const HourlyForecast = ({ hourly, startIndex }) => {
                 : 'bg-white/[0.04] border-transparent hover:bg-white/[0.08]'
             }`}
           >
-            <span className="readout text-[11px] uppercase tracking-wide text-mist">{hour.label}</span>
+            <span className="readout text-xs uppercase tracking-wide text-mist">{hour.label}</span>
             <SkyGlyph code={hour.code} isDay className="w-8 h-8 text-horizon-soft" />
             <span className="font-display font-semibold text-lg leading-none">{hour.temp}°</span>
             <span
-              className={`readout text-[11px] flex items-center gap-0.5 ${
+              className={`readout text-xs flex items-center gap-0.5 ${
                 hour.precip > 20 ? 'text-horizon' : 'text-mist/70'
               }`}
               aria-label={`${hour.precip}% chance of precipitation`}

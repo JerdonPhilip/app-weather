@@ -101,8 +101,10 @@ function App() {
           {/* top bar */}
           <header className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
             <div className="shrink-0">
-              <p className="eyebrow">Weather Dashboard</p>
-              <p className="font-display text-sm text-mist mt-0.5">Your sky, read like an instrument</p>
+              <p className="font-display font-bold text-2xl sm:text-3xl tracking-tight leading-none text-white">
+                Weather Dashboard
+              </p>
+              <p className="text-sm sm:text-base text-mist mt-1.5">Your sky, read like an instrument</p>
             </div>
             <div className="flex gap-3 flex-1 sm:max-w-xl sm:ml-auto">
               <div className="flex-1">
@@ -228,7 +230,7 @@ function App() {
                 </section>
 
                 <footer className="text-center pb-6 pt-2">
-                  <p className="readout text-[11px] text-mist/70">
+                  <p className="readout text-xs text-mist/70">
                     Data · Open-Meteo & RainViewer — updated{' '}
                     {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>

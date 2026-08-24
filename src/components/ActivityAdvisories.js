@@ -54,7 +54,7 @@ const ActivityAdvisories = ({ current, daily, aqiData }) => {
                   {v.good ? v.yes : v.no}
                 </span>
                 <span
-                  className={`readout text-[10px] uppercase tracking-wider inline-flex items-center gap-1 mt-0.5 ${
+                  className={`readout text-[11px] uppercase tracking-wider inline-flex items-center gap-1 mt-0.5 ${
                     v.good ? 'text-status-good' : 'text-mist/70'
                   }`}
                 >
@@ -72,7 +72,7 @@ const ActivityAdvisories = ({ current, daily, aqiData }) => {
           <ShirtIcon className="w-5 h-5" />
         </span>
         <span>
-          <span className="block eyebrow !text-[10px] !tracking-[0.16em]">What to wear</span>
+          <span className="block eyebrow !text-[11px] !tracking-[0.14em]">What to wear</span>
           <span className="block text-sm text-white/90">{wear}</span>
         </span>
       </div>
