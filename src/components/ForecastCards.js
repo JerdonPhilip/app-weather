@@ -1,64 +1,105 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { weatherIcons } from '../utils/weatherCodes';
+import { SkyGlyph, DropletIcon, WindIcon, HangerIcon, CalendarIcon } from './icons';
 
 const ForecastCards = ({ forecast }) => {
-    if (!forecast || !forecast.daily) return null;
+  if (!forecast || !forecast.daily) return null;
 
-    const days = forecast.daily.time.slice(0, 3).map((date, i) => {
-        const maxTemp = Math.round(forecast.daily.temperature_2m_max[i]);
-        const minTemp = Math.round(forecast.daily.temperature_2m_min[i]);
-        const weathercode = forecast.daily.weathercode?.[i] || 0;
-        const precip = forecast.daily.precipitation_sum[i];
-        const wind = forecast.daily.windspeed_10m_max[i];
-        const avgTemp = (maxTemp + minTemp) / 2;
-        // Simple laundry score
-        let laundryScore = 0;
-        if (avgTemp >= 20 && avgTemp <= 30) laundryScore += 2;
-        if (precip <= 0.1) laundryScore += 3;
-        if (wind >= 5 && wind <= 25) laundryScore += 1;
-        return { date, maxTemp, minTemp, weathercode, precip, wind, laundryScore };
-    });
+  const daily = forecast.daily;
+  const weekMin = Math.min(...daily.temperature_2m_min.slice(0, 3));
+  const weekMax = Math.max(...daily.temperature_2m_max.slice(0, 3));
+  const range = weekMax - weekMin || 1;
 
-    const bestDayIndex = days.reduce((best, day, i, arr) =>
-        day.laundryScore > arr[best].laundryScore ? i : best, 0);
+  const days = daily.time.slice(0, 3).map((date, i) => ({
+    date,
+    maxTemp: Math.round(daily.temperature_2m_max[i]),
+    minTemp: Math.round(daily.temperature_2m_min[i]),
+    code: daily.weathercode?.[i] || 0,
+    precip: Math.round(daily.precipitation_sum[i]),
+    wind: Math.round(daily.windspeed_10m_max[i]),
+  }));
 
-    return (
-        <motion.div
-            layout
-            initial={ { opacity: 0, y: 20 } }
-            animate={ { opacity: 1, y: 0 } }
-            exit={ { opacity: 0, scale: 0.95 } }
-            transition={ { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }
-            className="bg-surface-light/60 backdrop-blur-md rounded-card p-6 shadow-card border border-white/10"
-        >
-            <h3 className="text-xl font-bold text-text-primary mb-5">3‑Day Forecast</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                { days.map((day, i) => (
-                    <div
-                        key={ day.date }
-                        className={ `bg-white/5 rounded-card p-4 text-center border border-white/5 transition-colors ${i === bestDayIndex ? 'ring-2 ring-green-400/60 bg-green-400/10' : ''
-                            }` }
-                    >
-                        { i === bestDayIndex && (
-                            <span className="text-sm text-green-400 block mb-1 font-medium">🧺 Best for laundry</span>
-                        ) }
-                        <h4 className="font-semibold text-text-primary text-base mb-2">
-                            { new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) }
-                        </h4>
-                        <span className="text-4xl mb-2 block">{ weatherIcons[day.weathercode] || '🌤' }</span>
-                        <div className="text-text-primary font-bold text-xl">
-                            { day.maxTemp }° <span className="text-text-secondary text-base">{ day.minTemp }°</span>
-                        </div>
-                        <div className="text-sm text-text-secondary mt-2 space-y-0.5">
-                            <div>💧 { day.precip } mm</div>
-                            <div>💨 { day.wind } km/h</div>
-                        </div>
-                    </div>
-                )) }
-            </div>
-        </motion.div>
-    );
+  // Best drying day: dry, mild, breezy-but-not-gusty
+  const scores = days.map((d) => {
+    let s = 0;
+    if (d.precip <= 0.1) s += 3;
+    else if (d.precip <= 0.5) s += 1;
+    if (d.wind >= 5 && d.wind <= 25) s += 2;
+    if ([0, 1, 2].includes(d.code)) s += 1;
+    return s;
+  });
+  const bestIndex = scores.indexOf(Math.max(...scores));
+
+  return (
+    <motion.section
+      aria-label="Three day outlook"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+      className="glass-panel p-5 sm:p-6"
+    >
+      <h2 className="eyebrow flex items-center gap-2 mb-4">
+        <CalendarIcon className="w-4 h-4 text-horizon" /> 3-day outlook
+      </h2>
+
+      <ul className="space-y-2.5">
+        {days.map((day, i) => {
+          const left = ((day.minTemp - weekMin) / range) * 100;
+          const width = ((day.maxTemp - day.minTemp) / range) * 100;
+          return (
+            <li
+              key={day.date}
+              className={`relative rounded-2xl px-4 py-3 border grid grid-cols-[64px_40px_1fr_auto] items-center gap-3 ${
+                i === bestIndex ? 'bg-status-good/10 border-status-good/30' : 'bg-white/[0.04] border-transparent'
+              }`}
+            >
+              <div>
+                <p className="font-display font-semibold text-white text-base">
+                  {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                  {i === 0 && <span className="text-mist font-normal"> · today</span>}
+                </p>
+                <p className="readout text-[11px] text-mist">
+                  {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </p>
+              </div>
+
+              <SkyGlyph code={day.code} isDay={false} className="w-9 h-9 text-horizon-soft" />
+
+              <div className="min-w-0">
+                <div className="relative h-1.5 rounded-full bg-white/10">
+                  <div
+                    className="absolute h-full rounded-full bg-gradient-to-r from-horizon-dim via-horizon to-status-caution"
+                    style={{ left: `${left}%`, width: `${Math.max(width, 6)}%` }}
+                    role="img"
+                    aria-label={`Between ${day.minTemp} and ${day.maxTemp} degrees`}
+                  />
+                </div>
+                <p className="readout text-[11px] text-mist mt-1.5 flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1">
+                    <DropletIcon className="w-3 h-3" /> {day.precip} mm
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <WindIcon className="w-3 h-3" /> {day.wind} km/h
+                  </span>
+                </p>
+              </div>
+
+              <p className="text-right whitespace-nowrap">
+                <span className="font-display font-bold text-xl text-white">{day.maxTemp}°</span>{' '}
+                <span className="readout text-sm text-mist">{day.minTemp}°</span>
+              </p>
+
+              {i === bestIndex && (
+                <span className="absolute -top-2.5 right-3 inline-flex items-center gap-1 rounded-full bg-status-good/90 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-ink font-bold">
+                  <HangerIcon className="w-3 h-3" /> Best dry day
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </motion.section>
+  );
 };
 
 export default ForecastCards;

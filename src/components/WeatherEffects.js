@@ -1,108 +1,147 @@
-// src/WeatherEffects.js
-import React from 'react';
+// src/components/WeatherEffects.js — condition particles, memoized + reduced-motion aware
+import React, { useMemo } from 'react';
+import { useReducedMotion } from 'framer-motion';
 
-const WeatherEffects = ({ condition }) => {
-    if (condition === 'rainy') {
-        return (
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                { [...Array(50)].map((_, i) => (
-                    <div
-                        key={ i }
-                        className="absolute top-0 h-8 w-0.5 bg-blue-300 opacity-60 animate-rain"
-                        style={ {
-                            left: `${Math.random() * 100}%`,
-                            animationDelay: `${Math.random() * 2}s`,
-                            animationDuration: `${0.5 + Math.random() * 0.5}s`,
-                        } }
-                    />
-                )) }
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-200/10 to-blue-300/20 animate-pulse" />
-            </div>
-        );
-    }
+const seeded = (count, make) => Array.from({ length: count }, (_, i) => make(i));
 
-    if (condition === 'snowy') {
-        return (
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                { [...Array(30)].map((_, i) => (
-                    <div
-                        key={ i }
-                        className="absolute top-0 text-white opacity-70 animate-snow"
-                        style={ {
-                            left: `${Math.random() * 100}%`,
-                            animationDelay: `${Math.random() * 5}s`,
-                            animationDuration: `${5 + Math.random() * 5}s`,
-                        } }
-                    >
-                        ❄
-                    </div>
-                )) }
-            </div>
-        );
-    }
+const Rain = () => {
+  const drops = useMemo(
+    () =>
+      seeded(60, (i) => ({
+        left: `${(i * 17.3) % 100}%`,
+        delay: `${((i * 0.37) % 2).toFixed(2)}s`,
+        duration: `${(0.55 + ((i * 0.13) % 0.5)).toFixed(2)}s`,
+        opacity: 0.35 + ((i * 7) % 40) / 100,
+        height: `${56 + ((i * 11) % 36)}px`,
+      })),
+    []
+  );
+  return (
+    <>
+      {drops.map((d, i) => (
+        <span
+          key={i}
+          className="raindrop"
+          style={{
+            left: d.left,
+            animationDelay: d.delay,
+            animationDuration: d.duration,
+            opacity: d.opacity,
+            height: d.height,
+          }}
+        />
+      ))}
+    </>
+  );
+};
 
-    if (condition === 'cloudy') {
-        return (
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                { [...Array(5)].map((_, i) => (
-                    <div
-                        key={ i }
-                        className="absolute text-white opacity-20 text-6xl animate-float"
-                        style={ {
-                            top: `${20 + Math.random() * 60}%`,
-                            left: `${Math.random() * 100}%`,
-                            animationDelay: `${Math.random() * 10}s`,
-                            animationDuration: `${20 + Math.random() * 20}s`,
-                        } }
-                    >
-                        ☁
-                    </div>
-                )) }
-            </div>
-        );
-    }
+const Snow = () => {
+  const flakes = useMemo(
+    () =>
+      seeded(34, (i) => ({
+        left: `${(i * 29.7) % 100}%`,
+        delay: `${((i * 0.53) % 6).toFixed(2)}s`,
+        duration: `${(6 + ((i * 0.71) % 5)).toFixed(2)}s`,
+        scale: 0.6 + ((i * 13) % 10) / 12,
+      })),
+    []
+  );
+  return (
+    <>
+      {flakes.map((f, i) => (
+        <span
+          key={i}
+          className="snowflake"
+          style={{
+            left: f.left,
+            animationDelay: f.delay,
+            animationDuration: f.duration,
+            transform: `scale(${f.scale})`,
+          }}
+        />
+      ))}
+    </>
+  );
+};
 
-    if (condition === 'sunny') {
-        return (
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-10 right-10 text-yellow-300 text-6xl opacity-30 animate-pulse">
-                    ☀
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/10 via-transparent to-orange-200/10 animate-pulse" />
-            </div>
-        );
-    }
+const Clouds = ({ dense = false }) => {
+  const clouds = useMemo(
+    () =>
+      seeded(dense ? 7 : 4, (i) => ({
+        top: `${8 + ((i * 19) % 70)}%`,
+        width: `${180 + ((i * 97) % 260)}px`,
+        delay: `${-((i * 7.3) % 30)}s`,
+        duration: `${50 + ((i * 11) % 40)}s`,
+      })),
+    [dense]
+  );
+  return (
+    <>
+      {clouds.map((c, i) => (
+        <span
+          key={i}
+          className="cloudlet"
+          style={{
+            top: c.top,
+            width: c.width,
+            animationDelay: c.delay,
+            animationDuration: c.duration,
+          }}
+        />
+      ))}
+    </>
+  );
+};
 
-    if (condition === 'stormy') {
-        return (
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute inset-0 bg-white opacity-0 animate-lightning" />
-                { [...Array(3)].map((_, i) => (
-                    <div
-                        key={ i }
-                        className="absolute text-yellow-300 text-4xl opacity-0 animate-lightning-text"
-                        style={ {
-                            top: `${20 + i * 20}%`,
-                            left: `${30 + i * 15}%`,
-                            animationDelay: `${2 + i * 3}s`,
-                        } }
-                    >
-                        ⚡
-                    </div>
-                )) }
-            </div>
-        );
-    }
+const WeatherEffects = ({ condition, isDay = true }) => {
+  const reducedMotion = useReducedMotion();
+  if (reducedMotion) return null;
 
-    if (condition === 'foggy') {
-        return (
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute inset-0 bg-white/10 animate-pulse" />
-            </div>
-        );
-    }
+  return (
+    <div aria-hidden="true" className="fixed inset-0 pointer-events-none overflow-hidden">
+      {condition === 'clear' &&
+        (isDay ? (
+          <div className="sunglow" />
+        ) : (
+          <div className="moonglow" />
+        ))}
 
-    return null;
+      {condition === 'cloudy' && <Clouds />}
+
+      {condition === 'fog' && (
+        <>
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className="fogband"
+              style={{ top: `${18 + i * 26}%`, animationDuration: `${9 + i * 4}s` }}
+            />
+          ))}
+        </>
+      )}
+
+      {condition === 'rain' && (
+        <>
+          <Clouds dense />
+          <Rain />
+        </>
+      )}
+
+      {condition === 'snow' && (
+        <>
+          <Clouds dense />
+          <Snow />
+        </>
+      )}
+
+      {condition === 'storm' && (
+        <>
+          <div className="lightning" />
+          <Rain />
+        </>
+      )}
+    </div>
+  );
 };
 
 export default WeatherEffects;

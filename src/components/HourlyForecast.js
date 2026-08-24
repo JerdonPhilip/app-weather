@@ -1,44 +1,68 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { weatherIcons } from '../utils/weatherCodes';
+import { SkyGlyph, DropletIcon, ClockIcon } from './icons';
 
 const HourlyForecast = ({ hourly }) => {
-    if (!hourly) return null;
+  if (!hourly) return null;
 
-    const now = new Date();
-    const currentHourIndex = hourly.time.findIndex(t => new Date(t) >= now);
-    if (currentHourIndex === -1) return null;
+  const now = new Date();
+  const start = hourly.time.findIndex((t) => new Date(t) >= now);
+  if (start === -1) return null;
 
-    const next12 = hourly.time
-        .slice(currentHourIndex, currentHourIndex + 12)
-        .map((time, i) => ({
-            time: new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            temp: Math.round(hourly.temperature_2m[i + currentHourIndex]),
-            weathercode: hourly.weathercode[i + currentHourIndex],
-            precipProb: hourly.precipitation_probability[i + currentHourIndex],
-        }));
+  const hours = hourly.time.slice(start, start + 12).map((time, i) => ({
+    key: time,
+    label:
+      i === 0
+        ? 'Now'
+        : new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    temp: Math.round(hourly.temperature_2m[start + i]),
+    code: hourly.weathercode[start + i],
+    precip: hourly.precipitation_probability?.[start + i] ?? 0,
+  }));
 
-    return (
-        <motion.div
-            initial={ { opacity: 0, y: 10 } }
-            animate={ { opacity: 1, y: 0 } }
-            className="bg-surface-light/50 backdrop-blur-md rounded-card p-5 border border-white/10 shadow-card overflow-x-auto"
-        >
-            <h3 className="text-xl font-semibold text-text-primary mb-4">Next 12 Hours</h3>
-            <div className="flex gap-4 min-w-max">
-                { next12.map((hour, i) => (
-                    <div key={ i } className="flex flex-col items-center gap-1 text-white">
-                        <span className="text-sm text-text-secondary">{ hour.time }</span>
-                        <span className="text-2xl">{ weatherIcons[hour.weathercode] || '🌤' }</span>
-                        <span className="text-base font-medium">{ hour.temp }°</span>
-                        { hour.precipProb !== undefined && (
-                            <span className="text-sm text-blue-300">{ hour.precipProb }%</span>
-                        ) }
-                    </div>
-                )) }
-            </div>
-        </motion.div>
-    );
+  return (
+    <motion.section
+      aria-label="Hourly forecast"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+      className="glass-panel p-5 sm:p-6"
+    >
+      <h2 className="eyebrow flex items-center gap-2 mb-4">
+        <ClockIcon className="w-4 h-4 text-horizon" />
+        Next 12 hours
+      </h2>
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-1 px-1">
+        {hours.map((hour, i) => (
+          <div
+            key={hour.key}
+            className={`snap-start shrink-0 w-[68px] rounded-2xl py-3 flex flex-col items-center gap-1.5 border transition-colors ${
+              i === 0
+                ? 'bg-horizon/15 border-horizon/40'
+                : 'bg-white/[0.04] border-transparent hover:bg-white/[0.08]'
+            }`}
+          >
+            <span className="readout text-[11px] uppercase tracking-wide text-mist">{hour.label}</span>
+            <SkyGlyph code={hour.code} isDay className="w-8 h-8 text-horizon-soft" />
+            <span className="font-display font-semibold text-lg leading-none">{hour.temp}°</span>
+            <span
+              className={`readout text-[11px] flex items-center gap-0.5 ${
+                hour.precip > 20 ? 'text-horizon' : 'text-mist/70'
+              }`}
+              aria-label={`${hour.precip}% chance of precipitation`}
+            >
+              {hour.precip > 5 && (
+                <>
+                  <DropletIcon className="w-3 h-3" />
+                  {hour.precip}%
+                </>
+              )}
+            </span>
+          </div>
+        ))}
+      </div>
+    </motion.section>
+  );
 };
 
 export default HourlyForecast;
