@@ -1,6 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { HangerIcon, CheckIcon, AlertIcon, DropletIcon } from './icons';
+import {
+  dryLaundryScore,
+  dryLaundryReasons,
+  laundryVerdict,
+} from '../domain/advisories';
 
 // Score 0–10 rendered as five dots (2 points each)
 const ScoreDots = ({ score }) => (
@@ -20,67 +25,9 @@ const ScoreDots = ({ score }) => (
 const LaundryAdvisory = ({ today }) => {
   if (!today) return null;
 
-  const { temperature_2m_max, temperature_2m_min, precipitation_sum, windspeed_10m_max, relativehumidity_2m, weathercode } =
-    today;
-
-  let score = 0;
-  const reasons = [];
-
-  const avgTemp = (temperature_2m_max + temperature_2m_min) / 2;
-  if (avgTemp >= 20 && avgTemp <= 30) {
-    score += 2;
-    reasons.push({ ok: true, text: 'Warm enough for a quick dry' });
-  } else if (avgTemp > 15) {
-    score += 1;
-    reasons.push({ ok: true, text: 'Mild temperature — drying takes longer' });
-  } else {
-    reasons.push({ ok: false, text: 'Too cold for outdoor drying' });
-  }
-
-  if (precipitation_sum <= 0.1) {
-    score += 3;
-    reasons.push({ ok: true, text: 'No rain expected today' });
-  } else if (precipitation_sum <= 0.5) {
-    score += 1;
-    reasons.push({ ok: false, text: 'Light drizzle possible — keep an eye out' });
-  } else {
-    reasons.push({ ok: false, text: `About ${Math.round(precipitation_sum)} mm of rain expected` });
-  }
-
-  if (windspeed_10m_max >= 5 && windspeed_10m_max <= 25) {
-    score += 2;
-    reasons.push({ ok: true, text: 'Good breeze for drying' });
-  } else if (windspeed_10m_max > 25) {
-    score += 1;
-    reasons.push({ ok: false, text: 'Strong wind — secure the clothesline' });
-  } else {
-    reasons.push({ ok: false, text: 'Barely any breeze today' });
-  }
-
-  const avgHumidity = relativehumidity_2m?.length
-    ? relativehumidity_2m.reduce((a, b) => a + b, 0) / relativehumidity_2m.length
-    : null;
-  if (avgHumidity != null && avgHumidity < 50) {
-    score += 2;
-    reasons.push({ ok: true, text: 'Low humidity — fast drying' });
-  } else if (avgHumidity != null && avgHumidity > 80) {
-    reasons.push({ ok: false, text: 'Humid air slows drying' });
-  } else {
-    score += 1;
-  }
-
-  if ([0, 1, 2].includes(weathercode)) {
-    score += 1;
-    reasons.push({ ok: true, text: 'Sun or broken cloud helps' });
-  }
-  score = Math.min(score, 10);
-
-  const verdict =
-    score >= 6
-      ? { text: 'Hang it out', color: '#4ADE80', note: 'Conditions are on your side today.' }
-      : score >= 4
-        ? { text: 'Risky, but possible', color: '#FBBF24', note: 'Watch the sky and bring it in early.' }
-        : { text: 'Dry indoors today', color: '#F87171', note: 'The air is not on your side.' };
+  const score = dryLaundryScore(today);
+  const reasons = dryLaundryReasons(today);
+  const verdict = laundryVerdict(score);
 
   return (
     <motion.section
@@ -115,9 +62,9 @@ const LaundryAdvisory = ({ today }) => {
         ))}
       </ul>
 
-      {avgHumidity != null && (
+      {today.humidityAvg != null && (
         <p className="readout text-[11px] text-mist/80 mt-3 flex items-center gap-1.5">
-          <DropletIcon className="w-3 h-3" /> Avg humidity next 12h: {Math.round(avgHumidity)}%
+          <DropletIcon className="w-3 h-3" /> Avg humidity next 12h: {Math.round(today.humidityAvg)}%
         </p>
       )}
     </motion.section>

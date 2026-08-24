@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { SkyGlyph, DropletIcon, WindIcon, HangerIcon, CalendarIcon } from './icons';
+import { bestDryDayIndex } from '../domain/advisories';
 
 const ForecastCards = ({ forecast }) => {
   if (!forecast || !forecast.daily) return null;
@@ -19,16 +20,17 @@ const ForecastCards = ({ forecast }) => {
     wind: Math.round(daily.windspeed_10m_max[i]),
   }));
 
-  // Best drying day: dry, mild, breezy-but-not-gusty
-  const scores = days.map((d) => {
-    let s = 0;
-    if (d.precip <= 0.1) s += 3;
-    else if (d.precip <= 0.5) s += 1;
-    if (d.wind >= 5 && d.wind <= 25) s += 2;
-    if ([0, 1, 2].includes(d.code)) s += 1;
-    return s;
-  });
-  const bestIndex = scores.indexOf(Math.max(...scores));
+  // Same scorer as today's laundry verdict — one rule source.
+  const bestIndex = bestDryDayIndex(
+    daily.time.slice(0, 3).map((_, i) => ({
+      tempMax: daily.temperature_2m_max[i],
+      tempMin: daily.temperature_2m_min[i],
+      precipSum: daily.precipitation_sum[i],
+      windMax: daily.windspeed_10m_max[i],
+      humidityAvg: null,
+      code: daily.weathercode?.[i] || 0,
+    }))
+  );
 
   return (
     <motion.section

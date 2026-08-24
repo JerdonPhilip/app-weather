@@ -248,12 +248,15 @@ function App() {
                   <ForecastCards forecast={forecast} />
                   <LaundryAdvisory
                     today={{
-                      temperature_2m_max: forecast.daily.temperature_2m_max[0],
-                      temperature_2m_min: forecast.daily.temperature_2m_min[0],
-                      precipitation_sum: forecast.daily.precipitation_sum[0],
-                      windspeed_10m_max: forecast.daily.windspeed_10m_max[0],
-                      relativehumidity_2m: humidityWindow,
-                      weathercode: forecast.daily.weathercode?.[0],
+                      tempMax: forecast.daily.temperature_2m_max[0],
+                      tempMin: forecast.daily.temperature_2m_min[0],
+                      precipSum: forecast.daily.precipitation_sum[0],
+                      windMax: forecast.daily.windspeed_10m_max[0],
+                      code: forecast.daily.weathercode?.[0],
+                      humidityAvg:
+                        humidityWindow && humidityWindow.length
+                          ? humidityWindow.reduce((a, b) => a + b, 0) / humidityWindow.length
+                          : null,
                     }}
                   />
                 </div>
