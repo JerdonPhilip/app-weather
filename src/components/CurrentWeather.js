@@ -12,27 +12,21 @@ const rise = {
   }),
 };
 
-const CurrentWeather = ({ forecast, locationName }) => {
+const CurrentWeather = ({ forecast, locationName, nowIndex }) => {
   if (!forecast) return null;
 
   const current = forecast.current_weather;
   const daily = forecast.daily;
   const hourly = forecast.hourly;
   const isDay = current.is_day === 1;
-
-  const now = new Date();
-  const hourIdx = hourly?.time?.findIndex((t) => new Date(t) >= now) ?? -1;
+  const idx = nowIndex ?? 0;
   const feelsLike =
-    hourIdx >= 0 && hourly.apparent_temperature
-      ? Math.round(hourly.apparent_temperature[hourIdx])
+    hourly?.apparent_temperature?.[idx] != null
+      ? Math.round(hourly.apparent_temperature[idx])
       : Math.round(current.temperature);
-  const humidity =
-    hourIdx >= 0 && hourly.relativehumidity_2m ? hourly.relativehumidity_2m[hourIdx] : null;
+  const humidity = hourly?.relativehumidity_2m?.[idx] ?? null;
   const uvIndex = daily?.uv_index_max?.[0];
-  const precipProb =
-    hourIdx >= 0 && hourly.precipitation_probability
-      ? hourly.precipitation_probability[hourIdx]
-      : null;
+  const precipProb = hourly?.precipitation_probability?.[idx] ?? null;
   const uvData = uvCategory(uvIndex);
   const dirStr = compassPoint(current.winddirection);
 
@@ -44,6 +38,7 @@ const CurrentWeather = ({ forecast, locationName }) => {
     { label: 'Feels like', value: `${feelsLike}°C` },
   ];
 
+  const now = new Date();
   return (
     <motion.section
       aria-label="Current conditions"

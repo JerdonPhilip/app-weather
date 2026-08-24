@@ -2,12 +2,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { SkyGlyph, DropletIcon, ClockIcon } from './icons';
 
-const HourlyForecast = ({ hourly }) => {
+const HourlyForecast = ({ hourly, startIndex }) => {
   if (!hourly) return null;
 
-  const now = new Date();
-  const start = hourly.time.findIndex((t) => new Date(t) >= now);
-  if (start === -1) return null;
+  const start =
+    startIndex ??
+    hourly.time.findIndex((t) => new Date(t) >= new Date());
+  if (start === -1 || start == null) return null;
 
   const hours = hourly.time.slice(start, start + 12).map((time, i) => ({
     key: time,

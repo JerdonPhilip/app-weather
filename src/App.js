@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import config from './config';
 import WeatherEffects from './components/WeatherEffects';
 import LocationSearch from './components/LocationSearch';
 import CurrentWeather from './components/CurrentWeather';
@@ -16,8 +14,9 @@ import PullToRefreshWrapper from './components/PullToRefreshWrapper';
 import WindUVSummary from './components/WindUVSummary';
 import Spinner from './components/Spinner';
 import { useToast } from './components/Toast';
+import { useWeather } from './hooks/useWeather';
 import { LocateIcon, AlertIcon, RadarIcon } from './components/icons';
-import { getAtmosphere, getConditionKey } from './utils/weatherCodes';
+import { getAtmosphere } from './utils/weatherCodes';
 
 const DEFAULT_ATMOSPHERE = {
   sky: ['#101A34', '#0B1224', '#080D19'],
@@ -67,102 +66,37 @@ const AtmosphereLayer = ({ atmosphere }) => {
 };
 
 function App() {
-  const [forecast, setForecast] = useState(null);
-  const [airQuality, setAirQuality] = useState(null);
-  const [location, setLocation] = useState({ name: '', country: '', lat: 0, lon: 0 });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [locationLoading, setLocationLoading] = useState(false);
   const { showToast, ToastComponent } = useToast();
+  const weather = useWeather({ notify: showToast });
+  const {
+    forecast,
+    airQuality,
+    location,
+    loading,
+    locating,
+    error,
+    current,
+    nowIndex,
+    humidityWindow,
+    conditionKey,
+    isDay,
+    locate,
+    selectLocation,
+    refresh,
+  } = weather;
 
-  useEffect(() => {
-    getUserLocation();
-  }, []);
-
-  const fetchData = useCallback(
-    async (lat, lon, name = '', country = '') => {
-      setError('');
-      setLoading(true);
-      try {
-        const [forecastRes, aqiRes] = await Promise.all([
-          axios.get(`${config.FORECAST_API}?latitude=${lat}&longitude=${lon}${config.FORECAST_PARAMS}`),
-          axios.get(
-            `${config.AIR_QUALITY_API}?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5,pm10,european_aqi`
-          ),
-        ]);
-        setForecast(forecastRes.data);
-        setAirQuality({
-          usAqi: aqiRes.data.current?.us_aqi,
-          pm25: aqiRes.data.current?.pm2_5,
-          pm10: aqiRes.data.current?.pm10,
-        });
-        if (name) {
-          setLocation({ name, country, lat, lon });
-        } else {
-          setLocation({ name: 'Your Location', country: '', lat, lon });
-        }
-      } catch (err) {
-        console.error(err);
-        setError('Could not load weather data. Check your connection and try again.');
-        showToast('Fetching weather failed', 'error');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [showToast]
-  );
-
-  const getUserLocation = () => {
-    if (!navigator.geolocation) {
-      setError('Geolocation is not supported by this browser. Search for a city instead.');
-      showToast('Geolocation not supported', 'error');
-      return;
-    }
-    setLocationLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        fetchData(pos.coords.latitude, pos.coords.longitude).finally(() => setLocationLoading(false));
-      },
-      (err) => {
-        console.error(err);
-        setError('Location access was denied. Search for your city below.');
-        showToast('Location access denied', 'error');
-        setLocationLoading(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-    );
-  };
-
-  const handleLocationSelect = ({ lat, lon, name, country }) => {
-    fetchData(lat, lon, name, country);
-    showToast(`Showing weather for ${name}`);
-  };
-
-  const handleRefresh = async () => {
-    await fetchData(location.lat, location.lon, location.name, location.country);
-    showToast('Weather refreshed');
-  };
-
-  // ---- living sky ----
-  const current = forecast?.current_weather;
-  const conditionKey = current ? getConditionKey(current.weathercode) : null;
-  const isDay = current ? current.is_day === 1 : new Date().getHours() >= 6 && new Date().getHours() < 19;
   const atmosphere = current ? getAtmosphere(current.weathercode, isDay) : DEFAULT_ATMOSPHERE;
-
-  const hourNow = new Date().getHours();
-  const humidityWindow = (() => {
-    if (!forecast?.hourly?.time || !forecast.hourly.relativehumidity_2m) return null;
-    const idx = forecast.hourly.time.findIndex((t) => new Date(t) >= new Date());
-    if (idx < 0) return null;
-    return forecast.hourly.relativehumidity_2m.slice(idx, idx + 12);
-  })();
+  const humidityAvg =
+    humidityWindow && humidityWindow.length
+      ? humidityWindow.reduce((a, b) => a + b, 0) / humidityWindow.length
+      : null;
 
   return (
     <div className="min-h-screen relative">
       <AtmosphereLayer atmosphere={atmosphere} />
       <WeatherEffects condition={conditionKey} isDay={isDay} />
 
-      <PullToRefreshWrapper onRefresh={handleRefresh}>
+      <PullToRefreshWrapper onRefresh={refresh}>
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {/* top bar */}
           <header className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
@@ -172,18 +106,22 @@ function App() {
             </div>
             <div className="flex gap-3 flex-1 sm:max-w-xl sm:ml-auto">
               <div className="flex-1">
-                <LocationSearch onSelectLocation={handleLocationSelect} />
+                <LocationSearch onSelectLocation={selectLocation} />
               </div>
               <button
-                onClick={getUserLocation}
-                disabled={locationLoading}
+                onClick={locate}
+                disabled={locating}
                 aria-label="Use my current location"
                 className="h-12 px-4 sm:px-5 shrink-0 inline-flex items-center justify-center gap-2 rounded-full
                   bg-horizon/90 hover:bg-horizon text-ink font-display font-semibold text-sm
                   shadow-card transition-all duration-200 hover:-translate-y-px active:translate-y-0
                   disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 min-w-[48px]"
               >
-                {locationLoading ? <Spinner size="h-4 w-4" color="border-ink/30 border-t-ink" /> : <LocateIcon className="w-[18px] h-[18px]" />}
+                {locating ? (
+                  <Spinner size="h-4 w-4" color="border-ink/30 border-t-ink" />
+                ) : (
+                  <LocateIcon className="w-[18px] h-[18px]" />
+                )}
                 <span className="hidden sm:inline">My location</span>
               </button>
             </div>
@@ -200,7 +138,7 @@ function App() {
               <div className="flex-1">
                 <p className="text-white font-medium">{error}</p>
                 <button
-                  onClick={getUserLocation}
+                  onClick={locate}
                   className="mt-2 text-sm font-semibold text-horizon underline underline-offset-4 decoration-horizon/40 hover:decoration-horizon"
                 >
                   Try again
@@ -209,12 +147,12 @@ function App() {
             </motion.div>
           )}
 
-          {(loading || locationLoading) && !forecast && <SkeletonLoader />}
+          {(loading || locating) && !forecast && <SkeletonLoader />}
 
           <AnimatePresence mode="wait">
             {forecast && !loading && (
               <motion.main
-                key={location.name + current.time}
+                key={location.name + (current?.time ?? '')}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
@@ -223,12 +161,11 @@ function App() {
               >
                 <CurrentWeather
                   forecast={forecast}
-                  locationName={
-                    location.country ? `${location.name}, ${location.country}` : location.name
-                  }
+                  locationName={location.country ? `${location.name}, ${location.country}` : location.name}
+                  nowIndex={nowIndex}
                 />
 
-                <HourlyForecast hourly={forecast.hourly} />
+                <HourlyForecast hourly={forecast.hourly} startIndex={nowIndex} />
 
                 <WindUVSummary current={current} daily={forecast.daily} />
 
@@ -253,10 +190,7 @@ function App() {
                       precipSum: forecast.daily.precipitation_sum[0],
                       windMax: forecast.daily.windspeed_10m_max[0],
                       code: forecast.daily.weathercode?.[0],
-                      humidityAvg:
-                        humidityWindow && humidityWindow.length
-                          ? humidityWindow.reduce((a, b) => a + b, 0) / humidityWindow.length
-                          : null,
+                      humidityAvg,
                     }}
                   />
                 </div>
@@ -283,7 +217,8 @@ function App() {
 
                 <footer className="text-center pb-6 pt-2">
                   <p className="readout text-[11px] text-mist/70">
-                    Data · Open-Meteo & RainViewer — updated {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    Data · Open-Meteo & RainViewer — updated{' '}
+                    {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </footer>
               </motion.main>
