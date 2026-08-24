@@ -84,65 +84,116 @@ body {
 
 .raindrop {
   position: absolute;
-  top: -12vh;
+  top: -14vh;
   width: 1.5px;
   height: 72px;
   border-radius: 9999px;
   background: linear-gradient(180deg, transparent, rgba(186, 230, 253, 0.85));
   animation: rain-fall linear infinite;
+  will-change: transform;
 }
 @keyframes rain-fall {
   0% {
-    transform: translateY(-10vh);
+    transform: translateY(-16vh);
     opacity: 0;
   }
   8% {
     opacity: 0.55;
   }
+  92% {
+    opacity: 0.5;
+  }
   100% {
-    transform: translateY(110vh);
+    transform: translateY(116vh);
     opacity: 0;
   }
 }
 
-.snowflake {
+/* Snow: wrapper handles the fall, core sways — composing both reads as drift */
+.snow-faller {
   position: absolute;
   top: -8vh;
+  animation: snow-fall var(--fall-dur, 8s) linear var(--fall-delay, 0s) infinite;
+  will-change: transform;
+}
+@keyframes snow-fall {
+  0% {
+    transform: translateY(-8vh);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.8;
+  }
+  94% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(112vh);
+    opacity: 0;
+  }
+}
+.snowflake {
+  display: block;
   width: 7px;
   height: 7px;
   border-radius: 9999px;
   background: #eaf4ff;
   box-shadow: 0 0 6px rgba(234, 244, 255, 0.8);
-  animation: snow-fall linear infinite;
+  animation: snow-sway var(--sway-dur, 3s) ease-in-out var(--sway-delay, 0s) infinite alternate;
 }
-@keyframes snow-fall {
-  0% {
-    transform: translateY(-8vh) translateX(0);
-    opacity: 0;
+@keyframes snow-sway {
+  from {
+    transform: translateX(-16px);
   }
-  8% {
-    opacity: 0.75;
+  to {
+    transform: translateX(16px);
   }
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 9999px;
+  background: #dce9ff;
+  animation: twinkle var(--tw-dur, 3s) ease-in-out var(--tw-delay, 0s) infinite;
+}
+@keyframes twinkle {
+  0%,
   100% {
-    transform: translateY(108vh) translateX(46px);
-    opacity: 0;
+    opacity: 0.12;
+    transform: scale(0.75);
   }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.2);
+  }
+}
+
+.bolt {
+  position: absolute;
+  animation: flash 7s infinite;
+  pointer-events: none;
 }
 
 .cloudlet {
   position: absolute;
-  height: 64px;
-  border-radius: 9999px;
-  filter: blur(28px);
-  background: rgba(226, 240, 252, 0.16);
+  height: 72px;
   animation: cloud-drift linear infinite;
+  will-change: transform;
+}
+.cloudlet > span {
+  position: absolute;
+  border-radius: 9999px;
+  background: rgba(226, 240, 252, 0.16);
+  filter: blur(24px);
 }
 @keyframes cloud-drift {
   from {
-    transform: translateX(-32vw);
+    transform: translateX(-36vw);
   }
   to {
-    transform: translateX(122vw);
+    transform: translateX(126vw);
   }
 }
 
@@ -193,6 +244,16 @@ body {
   }
 }
 
+.halo {
+  position: absolute;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 214, 110, 0.22);
+  right: 4vw;
+  top: -12vmin;
+  width: 64vmin;
+  height: 64vmin;
+}
+
 .sunglow {
   position: absolute;
   width: 52vmin;
@@ -239,6 +300,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .raindrop,
+  .snow-faller,
   .snowflake,
   .cloudlet,
   .lightning,
@@ -246,6 +308,8 @@ body {
   .sunglow,
   .moonglow,
   .blob,
+  .star,
+  .bolt,
   .drift-a,
   .drift-b {
     animation: none !important;
