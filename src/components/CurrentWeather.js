@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { SkyGlyph, PinIcon, DropletIcon, UvIcon } from './icons';
-import { weatherDescriptions, compassPoint, uvCategory } from '../utils/weatherCodes';
+import { weatherDescriptions, compassPoint, uvCategory } from '../domain/wmo';
 
 const rise = {
   hidden: { opacity: 0, y: 18 },

@@ -15,8 +15,8 @@ import WindUVSummary from './components/WindUVSummary';
 import Spinner from './components/Spinner';
 import { useToast } from './components/Toast';
 import { useWeather } from './hooks/useWeather';
-import { LocateIcon, AlertIcon, RadarIcon } from './components/icons';
-import { getAtmosphere } from './utils/weatherCodes';
+import { LocateIcon, AlertIcon, RadarIcon, RefreshIcon } from './components/icons';
+import { getAtmosphere } from './ui/atmosphere';
 
 const DEFAULT_ATMOSPHERE = {
   sky: ['#101A34', '#0B1224', '#080D19'],
@@ -109,6 +109,17 @@ function App() {
                 <LocationSearch onSelectLocation={selectLocation} />
               </div>
               <button
+                onClick={() => refresh()}
+                disabled={loading || !forecast}
+                aria-label="Refresh weather data"
+                title="Refresh"
+                className="h-12 w-12 shrink-0 inline-flex items-center justify-center rounded-full
+                  bg-white/[0.08] hover:bg-white/[0.14] border border-white/[0.14] text-horizon
+                  transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <RefreshIcon className={`w-[18px] h-[18px] ${loading ? 'animate-spin' : ''}`} />
+              </button>
+              <button
                 onClick={locate}
                 disabled={locating}
                 aria-label="Use my current location"
@@ -176,6 +187,7 @@ function App() {
                     <SunriseCountdown
                       sunriseISO={forecast.daily.sunrise[0]}
                       sunsetISO={forecast.daily.sunset[0]}
+                      sunriseTomorrowISO={forecast.daily.sunrise?.[1]}
                     />
                   )}
                 </div>

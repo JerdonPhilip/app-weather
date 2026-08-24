@@ -4,9 +4,9 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import axios from 'axios';
 import config from '../config';
-import { getConditionKey } from '../utils/weatherCodes';
+import { getConditionKey } from '../domain/wmo';
 
-const AQI_PARAMS = 'current=us_aqi,pm2_5,pm10,european_aqi';
+const AQI_PARAMS = 'current=us_aqi,pm2_5,pm10';
 const EMPTY_LOCATION = { name: '', country: '', lat: 0, lon: 0 };
 
 export function useWeather({ notify = () => {} } = {}) {
@@ -121,7 +121,7 @@ export function useWeather({ notify = () => {} } = {}) {
         return h >= 6 && h < 19;
       })();
 
-  // First fix: fetch on mount (guarded against StrictMode double-invoke)
+  // Auto-locate on mount (guarded against StrictMode double-invoke)
   const didInit = useRef(false);
   useEffect(() => {
     if (didInit.current) return;

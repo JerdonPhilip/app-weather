@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { WindIcon, SunIcon } from './icons';
-import { compassPoint, uvCategory } from '../utils/weatherCodes';
+import { compassPoint, uvCategory } from '../domain/wmo';
 
 // Compass dial — needle points where wind blows toward
 const CompassDial = ({ degrees }) => {

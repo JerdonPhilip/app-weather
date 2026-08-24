@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { LeafIcon } from './icons';
-import { aqiCategory } from '../utils/weatherCodes';
+import { aqiCategory } from '../domain/wmo';
 
 // AQI band scale 0–300 with a marker at the reading
 const AqiScale = ({ value }) => {

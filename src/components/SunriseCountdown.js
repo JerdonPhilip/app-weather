@@ -4,7 +4,6 @@ import { SunriseIcon, SunsetIcon } from './icons';
 
 // Sun-path arc: dot travels the day's arc between sunrise and sunset.
 const SunPathArc = ({ progress }) => {
-  // Arc from (10,52) to (90,52), apex at (50,14)
   const angle = Math.PI * Math.min(Math.max(progress, 0), 1);
   const x = 50 - 40 * Math.cos(angle);
   const y = 52 - 38 * Math.sin(angle);
@@ -22,7 +21,7 @@ const SunPathArc = ({ progress }) => {
   );
 };
 
-const SunriseCountdown = ({ sunriseISO, sunsetISO }) => {
+const SunriseCountdown = ({ sunriseISO, sunsetISO, sunriseTomorrowISO }) => {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -32,15 +31,39 @@ const SunriseCountdown = ({ sunriseISO, sunsetISO }) => {
 
   const sunrise = new Date(sunriseISO);
   const sunset = new Date(sunsetISO);
-  const isDay = now >= sunrise && now < sunset;
-  const nextEvent = isDay ? sunset : new Date(sunrise.getTime() + 86400000);
-  const diffMs = nextEvent - now;
+
+  // Three real phases — no +24h hand-waving:
+  //   before today's sunrise → count to it
+  //   during the day         → count to sunset
+  //   after sunset           → count to tomorrow's sunrise (API day 2, else +24h fallback)
+  let phase, target;
+  if (now < sunrise) {
+    phase = 'beforeSunrise';
+    target = sunrise;
+  } else if (now < sunset) {
+    phase = 'day';
+    target = sunset;
+  } else {
+    phase = 'afterSunset';
+    target = sunriseTomorrowISO ? new Date(sunriseTomorrowISO) : new Date(sunrise.getTime() + 86400000);
+  }
+
+  const diffMs = target - now;
   if (diffMs < 0) return null;
 
-  const progress = isDay ? (now - sunrise) / (sunset - sunrise) : 0;
+  const progress = phase === 'day' ? (now - sunrise) / (sunset - sunrise) : 0;
   const hours = Math.floor(diffMs / 3600000);
   const minutes = Math.floor((diffMs % 3600000) / 60000);
   const fmt = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const heading =
+    phase === 'day' ? 'Daylight remaining' : 'Until sunrise';
+  const note =
+    phase === 'day'
+      ? `Sunset at ${fmt(sunset)}`
+      : phase === 'beforeSunrise'
+        ? `Sunrise at ${fmt(sunrise)}`
+        : `Tomorrow at ${fmt(target)}`;
 
   return (
     <motion.section
@@ -50,10 +73,10 @@ const SunriseCountdown = ({ sunriseISO, sunsetISO }) => {
       transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
       className="glass-panel p-5 sm:p-6 flex flex-col"
     >
-      <h2 className="eyebrow mb-3">{isDay ? 'Daylight remaining' : 'Until sunrise'}</h2>
+      <h2 className="eyebrow mb-3">{heading}</h2>
 
       <div className="my-1">
-        {isDay ? (
+        {phase === 'day' ? (
           <SunPathArc progress={progress} />
         ) : (
           <div className="h-[72px] flex items-end justify-center text-white/25 pb-2">
@@ -70,11 +93,14 @@ const SunriseCountdown = ({ sunriseISO, sunsetISO }) => {
       </p>
 
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/10">
-        <span className="readout text-xs text-mist flex items-center gap-1.5">
-          <SunriseIcon className="w-3.5 h-3.5 text-status-caution" /> {fmt(sunrise)}
-        </span>
-        <span className="readout text-xs text-mist flex items-center gap-1.5">
-          <SunsetIcon className="w-3.5 h-3.5 text-horizon" /> {fmt(sunset)}
+        <span className="readout text-xs text-mist">{note}</span>
+        <span className="flex items-center gap-3">
+          <span className="readout text-xs text-mist flex items-center gap-1.5">
+            <SunriseIcon className="w-3.5 h-3.5 text-status-caution" /> {fmt(sunrise)}
+          </span>
+          <span className="readout text-xs text-mist flex items-center gap-1.5">
+            <SunsetIcon className="w-3.5 h-3.5 text-horizon" /> {fmt(sunset)}
+          </span>
         </span>
       </div>
     </motion.section>
